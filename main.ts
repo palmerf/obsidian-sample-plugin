@@ -19,6 +19,12 @@ export default class ExamplePlugin extends Plugin {
 
 	async onload() {
 
+		this.addRibbonIcon("dice", "Print leaf types", () => {
+			this.app.workspace.iterateAllLeaves((leaf) => {
+				console.log(leaf.getViewState().type);
+			});
+		});
+
 		this.registerView(
 			VIEW_TYPE_EXAMPLE,
 			(leaf) => new ExampleView(leaf)
@@ -117,7 +123,7 @@ export default class ExamplePlugin extends Plugin {
 		// Add an icon to the ribbon
 		addIcon("circle", `<circle cx="50" cy="50" r="50" fill="currentColor" />`);
 		this.addRibbonIcon("circle", "Click me", () => {
-			console.log("The circle says Hey, you!!!");
+			console.log(`The settings were ${this.settings.dateFormat}`);
 		});
 
 		// Fun with modals.
@@ -147,7 +153,6 @@ export default class ExamplePlugin extends Plugin {
 				new ExampleSuggestModal(this.app).open();
 			},
 		});
-
 	}
 
 	async activateView() {
