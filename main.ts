@@ -49,6 +49,10 @@ export default class ExamplePlugin extends Plugin {
 		fruits.createEl("span", {text: "🍎"});
 		fruits.createEl("span", {text: "🍌"});
 
+		const veggies = this.addStatusBarItem();
+		veggies.createEl("span", {text: "🥦"});
+		veggies.createEl("span", {text: "🥬"});
+
 		// Insert text into the current editor
 		//
 		this.addCommand({
