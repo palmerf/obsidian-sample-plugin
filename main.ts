@@ -1,12 +1,14 @@
-import { Menu, Notice, Editor, moment, addIcon, Plugin, setIcon } from "obsidian";
-import { ExampleModal, ExampleSuggestModal } from "./modals";
-import { ExampleSettingTab } from "./settings";
+import {Menu, Notice, Editor, moment, addIcon, Plugin, setIcon, WorkspaceLeaf} from "obsidian";
+import {ExampleModal, ExampleSuggestModal} from "./modals";
+import {ExampleSettingTab} from "./settings";
+import {ExampleView, VIEW_TYPE_EXAMPLE} from "./view";
 
 // The settings definition and default settings
 //
 interface ExamplePluginSettings {
 	dateFormat: string;
 }
+
 const DEFAULT_SETTINGS: Partial<ExamplePluginSettings> = {
 	dateFormat: "YYYY-MM-DD",
 };
@@ -16,6 +18,15 @@ export default class ExamplePlugin extends Plugin {
 	settings: ExamplePluginSettings;
 
 	async onload() {
+
+		this.registerView(
+			VIEW_TYPE_EXAMPLE,
+			(leaf) => new ExampleView(leaf)
+		);
+
+		this.addRibbonIcon("star", "Activate view", () => {
+			this.activateView();
+		});
 
 		// Add the Settings Tab
 		//
@@ -103,9 +114,8 @@ export default class ExamplePlugin extends Plugin {
 			menu.showAtMouseEvent(event);
 		});
 
-		// Add an icon to the
+		// Add an icon to the ribbon
 		addIcon("circle", `<circle cx="50" cy="50" r="50" fill="currentColor" />`);
-
 		this.addRibbonIcon("circle", "Click me", () => {
 			console.log("The circle says Hey, you!!!");
 		});
@@ -137,6 +147,28 @@ export default class ExamplePlugin extends Plugin {
 				new ExampleSuggestModal(this.app).open();
 			},
 		});
+
+	}
+
+	async activateView() {
+		let {workspace} = this.app;
+
+		let leaf: WorkspaceLeaf | null = null;
+		let leaves = workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE);
+
+		if (leaves.length > 0) {
+			// A leaf with our view already exists, use that
+			leaf = leaves[0];
+		} else {
+			// Our view could not be found in the workspace, create a new leaf
+			// in the right sidebar for it
+			let leaf = workspace.getRightLeaf(false);
+			await leaf.setViewState({type: VIEW_TYPE_EXAMPLE, active: true});
+		}
+
+		// TODO: There is a type problem when this lin is uncommented. Need to fix this.
+		// "Reveal" the leaf in case it is in a collapsed sidebar
+		//workspace.revealLeaf(leaf);
 	}
 
 	// Helper methods for the setting code
@@ -159,8 +191,8 @@ export default class ExamplePlugin extends Plugin {
 		}
 	}
 
-	private updateLineCount (fileContent?: string) {
-		const count = fileContent ? fileContent .split(/\r\r|\r|\n/).length : 0;
+	private updateLineCount(fileContent?: string) {
+		const count = fileContent ? fileContent.split(/\r\r|\r|\n/).length : 0;
 		const linesWord = count === 1 ? "line" : "lines";
 		this.statusBarTextElement.textContent = `${count} ${linesWord}`;
 	}
